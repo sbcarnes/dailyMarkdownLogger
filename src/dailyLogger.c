@@ -10,11 +10,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     static HBITMAP hbmp;
 
     static RECT rcClient;
-    static RECT hzBox;
-    static RECT statDisplay;
-    static RECT cnvRect;
 
     static POINT pt;
+    
+    static SYSTEMTIME localTime;
+    static char curDateBuffer[128];
 
     switch (msg)
     {
@@ -27,7 +27,52 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             hdcCompat = CreateCompatibleDC(hdc);
             GetClientRect(hwnd, &rcClient);
 
-            GetClientRect(hwnd, &cnvRect);
+            GetLocalTime(&localTime);
+            sprintf(curDateBuffer, "%04d-%02d-%02d", localTime.wYear, localTime.wMonth, localTime.wDay);
+            
+            HWND dateDisplay = CreateWindow(
+                "STATIC",
+                curDateBuffer,
+                WS_CHILD | WS_VISIBLE,
+                10, 10, 200, 30,
+                hwnd,
+                NULL,
+                hInstance,
+                NULL
+            );
+            
+            HWND promptDisplay = CreateWindow(
+                "STATIC",
+                "What did you learn today?",
+                WS_CHILD | WS_VISIBLE,
+                10, 45, 200, 30,
+                hwnd,
+                NULL,
+                hInstance,
+                NULL
+            );
+            
+            HWND logContent = CreateWindow(
+                "EDIT",
+                NULL,
+                WS_CHILD | WS_VISIBLE | WS_BORDER | ES_MULTILINE | ES_AUTOVSCROLL | WS_VSCROLL,
+                10, 80, 400, 200,
+                hwnd,
+                NULL,
+                hInstance,
+                NULL
+            );
+            
+            HWND saveButton = CreateWindow(
+                "BUTTON",
+                "Save",
+                WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
+                450, 100, 100, 30,
+                hwnd,
+                (HMENU)1,
+                hInstance,
+                NULL
+            );
 
             ReleaseDC(hwnd, hdc);
         }
