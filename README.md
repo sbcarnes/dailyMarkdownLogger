@@ -3,15 +3,15 @@
 
 ## 🧱 UI Structure & Layout
 
-- [ ] Create STATIC label to display current date
-- [ ] Create STATIC label to show a generic prompt (e.g., "What did you learn today?")
-- [ ] Create EDIT control for multiline user input
-- [ ] Create BUTTON control labeled "Save"
-- [ ] Arrange controls neatly in the window
+- [x] Create STATIC label to display current date
+- [x] Create STATIC label to show a generic prompt (e.g., "What did you learn today?")
+- [x] Create EDIT control for multiline user input
+- [x] Create BUTTON control labeled "Save"
+- [x] Arrange controls neatly in the window
 
 ## 🔧 Core Functionality
 
-- [ ] Use GetLocalTime() to retrieve the current date
+- [x] Use GetLocalTime() to retrieve the current date
 - [ ] Generate a markdown filename based on the date (e.g., 2025-05-29.md)
 - [ ] On button click, retrieve text from EDIT control
 - [ ] Write the text to the markdown file
