@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define IDC_EDIT_LOG 1001
+
 const char g_szClassName[] = "myWindowClass";
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -28,7 +30,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             GetClientRect(hwnd, &rcClient);
 
             GetLocalTime(&localTime);
-            sprintf(curDateBuffer, "%04d-%02d-%02d", localTime.wYear, localTime.wMonth, localTime.wDay);
+            snprintf(curDateBuffer, sizeof(curDateBuffer), "%04d-%02d-%02d", localTime.wYear, localTime.wMonth, localTime.wDay);
             
             HWND dateDisplay = CreateWindow(
                 "STATIC",
@@ -58,7 +60,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 WS_CHILD | WS_VISIBLE | WS_BORDER | ES_MULTILINE | ES_AUTOVSCROLL | WS_VSCROLL,
                 10, 80, 400, 200,
                 hwnd,
-                NULL,
+                (HMENU)IDC_EDIT_LOG,
                 hInstance,
                 NULL
             );
@@ -83,14 +85,26 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             int control_id = LOWORD(wParam);
             int notification = HIWORD(wParam);
             HWND hwndControl = (HWND)lParam;
+            HWND hEdit = GetDlgItem(hwnd, IDC_EDIT_LOG);
+            // Adjust size as needed
+            char editBuffer[4096];
             
             if (notification == BN_CLICKED) {
                 if(control_id ==1){
                     //MessageBeep(MB_OK);
-                    sprintf(curDateBuffer, "%04d-%02d-%02d.md", localTime.wYear, localTime.wMonth, localTime.wDay);
+                    GetWindowText(hEdit, editBuffer, sizeof(editBuffer));
+                    
+                    snprintf(curDateBuffer, sizeof(curDateBuffer), "../logs/%04d-%02d-%02d.md", localTime.wYear, localTime.wMonth, localTime.wDay);
+                    FILE* logFile = fopen(curDateBuffer, "w");
+                    
+                    fprintf(logFile, editBuffer);
+                    
+                    // Close file
+                    fclose(logFile);
+                    //MessageBox(hwnd, curDateBuffer, "File Name", MB_OK | MB_ICONINFORMATION);
                     
                 }
-                MessageBox(hwnd, curDateBuffer, "File Name", MB_OK | MB_ICONINFORMATION);
+                
                 InvalidateRect(hwnd, NULL, TRUE);
             }
             break;
