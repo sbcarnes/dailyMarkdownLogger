@@ -34,7 +34,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 "STATIC",
                 curDateBuffer,
                 WS_CHILD | WS_VISIBLE,
-                10, 10, 200, 30,
+                10, 10, 180, 20,
                 hwnd,
                 NULL,
                 hInstance,
@@ -45,7 +45,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 "STATIC",
                 "What did you learn today?",
                 WS_CHILD | WS_VISIBLE,
-                10, 45, 200, 30,
+                10, 45, 180, 20,
                 hwnd,
                 NULL,
                 hInstance,
@@ -73,10 +73,28 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 hInstance,
                 NULL
             );
-
+            
+            memset(curDateBuffer, '\0', sizeof(curDateBuffer)/sizeof(curDateBuffer[0]));
             ReleaseDC(hwnd, hdc);
         }
         break;
+        
+        case WM_COMMAND: {
+            int control_id = LOWORD(wParam);
+            int notification = HIWORD(wParam);
+            HWND hwndControl = (HWND)lParam;
+            
+            if (notification == BN_CLICKED) {
+                if(control_id ==1){
+                    //MessageBeep(MB_OK);
+                    sprintf(curDateBuffer, "%04d-%02d-%02d.md", localTime.wYear, localTime.wMonth, localTime.wDay);
+                    
+                }
+                MessageBox(hwnd, curDateBuffer, "File Name", MB_OK | MB_ICONINFORMATION);
+                InvalidateRect(hwnd, NULL, TRUE);
+            }
+            break;
+        }
 
         case WM_PAINT:
         {
