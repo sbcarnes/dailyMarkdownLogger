@@ -1,7 +1,5 @@
 CC = gcc
 
-LINK_EXE = ./bin/dailyLogger
-
 # Libraries to include
 LIBS = -lgdi32
 
@@ -9,22 +7,30 @@ LIBS = -lgdi32
 CFLAGS = -Wl,-subsystem,windows -mwindows
 
 # Main source file
-SRC = src/dailyLogger.c
+SRC = src/dailyLogger.c src/fileops.c
 
-# Object file(s)
-OBJS = build/dailyLogger.o
+BUILD_DIR = build
+BIN_DIR = bin
 
-all: $(OBJS) $(LINK_EXE)
+OBJ = $(SRC:src/%.c=$(BUILD_DIR)/%.o)
 
-$(OBJS):$(SRC)
+# Output executable
+BIN = $(BIN_DIR)/dailyLogger.exe
 
-$(OBJS):
-	$(CC) -c $(SRC) $(LIBS) -o $@
+# Default target
+all: $(BIN)
 
-$(LINK_EXE): $(OBJS)
-	$(CC) $(LIBS) $(CFLAGS) $^ -o $@
+# Link object files into the exe
+$(BIN): $(OBJ)
+	@if not exist $(BIN_DIR) mkdir $(BIN_DIR)
+	$(CC) $(OBJ) -o $@ $(CFLAGS)
 
+# Compile .c file into .o files
+$(BUILD_DIR)/%.o: src/%.c
+	@if not exist $(BUILD_DIR) mkdir $(BUILD_DIR)
+	$(CC) -c $< -o $@ $(CFLAGS)
+
+# Clean up build artifacts
 clean:
-	rm -f *.o
-	rm -f *~
-	rm -f $(LINK_EXE)
+	-if exist $(BUILD_DIR) rmdir /s /q $(BUILD_DIR)
+	-if exist $(BIN_DIR) rmdir /s /q $(BIN_DIR)
