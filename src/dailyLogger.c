@@ -95,25 +95,42 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             if (notification == BN_CLICKED) {
                 if(control_id ==1){
                     //MessageBeep(MB_OK);
-                    snprintf(curDateBuffer, sizeof(curDateBuffer), "../logs/%04d-%02d-%02d.md", localTime.wYear, localTime.wMonth, localTime.wDay);
-                    if((logFile = fopen(curDateBuffer, "w")) == NULL)
+                    int printResult = snprintf(curDateBuffer, sizeof(curDateBuffer), "../logs/%04d-%02d-%02d.md", localTime.wYear, localTime.wMonth, localTime.wDay);
+                    if(printResult < 0 || printResult >= sizeof(curDateBuffer))
                     {
-                        MessageBox(hwnd, "The log file was not opened", "Could not write to file", MB_ICONEXCLAMATION | MB_OK);
+                        snprintf(errorBuffer, sizeof(errorBuffer), "Error formatting file name \n\n errNo: %d\n errMsg: %s", errno, strerror(errno));
+                        MessageBox(hwnd, errorBuffer, "Error closing log file", MB_ICONEXCLAMATION | MB_OK);
+                        perror(errorBuffer);
                     }
                     else
                     {
-                        GetWindowText(hEdit, editBuffer, sizeof(editBuffer));
-                        if((fprintf(logFile, editBuffer) < 0))
+                        if((logFile = fopen(curDateBuffer, "w")) == NULL)
                         {
-                            snprintf(errorBuffer, sizeof(errorBuffer), "The log could not be written \n\n errNo: %d\n errMsg: %s", errno, strerror(errno));
-                            MessageBox(hwnd, errorBuffer, "Could not write to file", MB_ICONEXCLAMATION | MB_OK);
+                            snprintf(errorBuffer, sizeof(errorBuffer), "Could not open file: '%04d-%02d-%02d.md' \n\n errNo: %d\n errMsg: %s",
+                                    localTime.wYear, localTime.wMonth, localTime.wDay, errno, strerror(errno));
+                            MessageBox(hwnd, errorBuffer, "Could not open file", MB_ICONEXCLAMATION | MB_OK);
+                            perror(errorBuffer);
                         }
+                        else
+                        {
+                            GetWindowText(hEdit, editBuffer, sizeof(editBuffer));
+                            if((fprintf(logFile, editBuffer) < 0))
+                            {
+                                snprintf(errorBuffer, sizeof(errorBuffer), "The log could not be written \n\n errNo: %d\n errMsg: %s", errno, strerror(errno));
+                                MessageBox(hwnd, errorBuffer, "Could not write to file", MB_ICONEXCLAMATION | MB_OK);
+                                perror(errorBuffer);
+                            }
+                        }
+                        
+                        // Close file
+                        if(fclose(logFile) != 0)
+                        {
+                            snprintf(errorBuffer, sizeof(errorBuffer), "Error closing log file \n\n errNo: %d\n errMsg: %s", errno, strerror(errno));
+                            MessageBox(hwnd, errorBuffer, "Error closing log file", MB_ICONEXCLAMATION | MB_OK);
+                            perror(errorBuffer);
+                        }
+                        //MessageBox(hwnd, curDateBuffer, "File Name", MB_OK | MB_ICONINFORMATION);
                     }
-                    
-                    // Close file
-                    fclose(logFile);
-                    //MessageBox(hwnd, curDateBuffer, "File Name", MB_OK | MB_ICONINFORMATION);
-                    
                 }
                 
                 InvalidateRect(hwnd, NULL, TRUE);
