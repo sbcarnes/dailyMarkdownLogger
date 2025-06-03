@@ -1,3 +1,3 @@
-build/*.o
-bin/*.exe
+build/
+bin/
 logs/*.md

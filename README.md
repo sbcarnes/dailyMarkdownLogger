@@ -15,7 +15,13 @@
 - [x] Generate a markdown filename based on the date (e.g., 2025-05-29.md)
 - [x] On button click, retrieve text from EDIT control
 - [x] Write the text to the markdown file
-- [ ] Handle file I/O errors gracefully (e.g., show MessageBox on failure)
+- [x] Handle file I/O errors gracefully (e.g., show MessageBox on failure)
+
+## 🧩 Modularity
+
+- [x] Create header and source files to migrate functions into
+- [x] Update Makefile to address new source files and architecture
+- [ ] Migrate constants, macros, control IDs, functionality from central main C file
 
 ## 🎨 Style (Optional, Later Stages)
 
