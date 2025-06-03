@@ -86,18 +86,29 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             int notification = HIWORD(wParam);
             HWND hwndControl = (HWND)lParam;
             HWND hEdit = GetDlgItem(hwnd, IDC_EDIT_LOG);
+            
+            FILE* logFile;
             // Adjust size as needed
             char editBuffer[4096];
+            char errorBuffer[1024];
             
             if (notification == BN_CLICKED) {
                 if(control_id ==1){
                     //MessageBeep(MB_OK);
-                    GetWindowText(hEdit, editBuffer, sizeof(editBuffer));
-                    
                     snprintf(curDateBuffer, sizeof(curDateBuffer), "../logs/%04d-%02d-%02d.md", localTime.wYear, localTime.wMonth, localTime.wDay);
-                    FILE* logFile = fopen(curDateBuffer, "w");
-                    
-                    fprintf(logFile, editBuffer);
+                    if((logFile = fopen(curDateBuffer, "w")) == NULL)
+                    {
+                        MessageBox(hwnd, "The log file was not opened", "Could not write to file", MB_ICONEXCLAMATION | MB_OK);
+                    }
+                    else
+                    {
+                        GetWindowText(hEdit, editBuffer, sizeof(editBuffer));
+                        if((fprintf(logFile, editBuffer) < 0))
+                        {
+                            snprintf(errorBuffer, sizeof(errorBuffer), "The log could not be written \n\n errNo: %d\n errMsg: %s", errno, strerror(errno));
+                            MessageBox(hwnd, errorBuffer, "Could not write to file", MB_ICONEXCLAMATION | MB_OK);
+                        }
+                    }
                     
                     // Close file
                     fclose(logFile);
