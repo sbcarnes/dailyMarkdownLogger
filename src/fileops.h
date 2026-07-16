@@ -2,6 +2,7 @@
 #define FILEOPS_H
 
 #include <windows.h>
+#include <stddef.h>
 
 /**
     Save a log entry to a file with the filename given

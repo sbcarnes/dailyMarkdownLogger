@@ -2,20 +2,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "config.h"
 #include "fileops.h"
 
-#define IDC_EDIT_LOG 1001
 
 const char g_szClassName[] = "myWindowClass";
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-    static HDC hdcCompat;
-    static HBITMAP hbmp;
-
     static RECT rcClient;
-
-    static POINT pt;
     
     static SYSTEMTIME localTime;
     static char curDateBuffer[128];
@@ -28,7 +23,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             HINSTANCE hInstance = pCreate->hInstance;
             
             HDC hdc = GetDC(hwnd);
-            hdcCompat = CreateCompatibleDC(hdc);
             GetClientRect(hwnd, &rcClient);
 
             GetLocalTime(&localTime);
@@ -73,7 +67,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
                 450, 100, 100, 30,
                 hwnd,
-                (HMENU)1,
+                (HMENU)IDC_BUTTON_SAVE,
                 hInstance,
                 NULL
             );
@@ -86,26 +80,26 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         case WM_COMMAND: {
             int control_id = LOWORD(wParam);
             int notification = HIWORD(wParam);
-            HWND hwndControl = (HWND)lParam;
+            
             HWND hEdit = GetDlgItem(hwnd, IDC_EDIT_LOG);
             
-            FILE* logFile;
             // Adjust size as needed
-            char editBuffer[4096];
-            char errorBuffer[1024];
+            char editBuffer[EDIT_BUFFER_SIZE];
+            char errorBuffer[ERROR_BUFFER_SIZE];
             
             if (notification == BN_CLICKED) {
-                if(control_id ==1){
+                if(control_id == IDC_BUTTON_SAVE){
                     //MessageBeep(MB_OK);
+                    GetLocalTime(&localTime);
                     GetWindowText(hEdit, editBuffer, sizeof(editBuffer));
                     if (!saveLogToFile(&localTime, editBuffer, errorBuffer, sizeof(errorBuffer))){
                         MessageBox(hwnd, errorBuffer, "Error", MB_OK | MB_ICONERROR);
-                        //perror(errorBuffer);
+                        
                         fprintf(stderr, "%s\n", errorBuffer);
                     }
                 }
                 
-                InvalidateRect(hwnd, NULL, TRUE);
+                //InvalidateRect(hwnd, NULL, TRUE);
             }
             break;
         }
@@ -145,8 +139,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         break;
 
         case WM_DESTROY:
-            DeleteDC(hdcCompat);
-            
             PostQuitMessage(0);
         break;
 

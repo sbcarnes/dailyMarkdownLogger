@@ -1,4 +1,5 @@
 #include "fileops.h"
+#include "config.h"
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
@@ -10,7 +11,7 @@ BOOL saveLogToFile(const SYSTEMTIME *time, const char *text, char *errorReport, 
     char filePath[128];
     
     int formatFileName = snprintf(fileName, sizeof(fileName), "%04d-%02d-%02d.md", time->wYear, time->wMonth, time->wDay);
-    int formatFilePath = snprintf(filePath, sizeof(filePath), "../logs/%s", fileName);
+    int formatFilePath = snprintf(filePath, sizeof(filePath), "%s/%s", LOG_DIRECTORY, fileName);
     
     if((formatFileName < 0 || formatFileName >= sizeof(fileName)) || (formatFilePath < 0 || formatFilePath >= sizeof(filePath))) {
         snprintf(errorReport, errorReportSize, "Error formatting file name \n\n errNo: %d\n errMsg: %s", errno, strerror(errno));
