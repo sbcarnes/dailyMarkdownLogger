@@ -9,6 +9,12 @@
 
 #define IDC_BUTTON_SAVE     1004
 
+#define FIRST_FIELD_Y       45
+#define PROMPT_HEIGHT       20
+#define PROMPT_EDIT_GAP     5
+#define EDIT_HEIGHT         80
+#define FIELD_VERTICAL_STEP 120
+
 #define EDIT_BUFFER_SIZE    4096
 #define ERROR_BUFFER_SIZE   1024
 

@@ -30,8 +30,22 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             "What did I work on?",
             IDC_EDIT_WORKED_ON,
             NULL
+        },
+        {
+            "What did I learn?",
+            "What did I learn?",
+            IDC_EDIT_LEARNED,
+            NULL
+        },
+        {
+            "What is the next concrete step?",
+            "What is the next concrete step?",
+            IDC_EDIT_NEXT_STEP,
+            NULL
         }
     };
+    
+    static const size_t fieldCount = sizeof(fields) / sizeof(fields[0]);
 
     switch (msg)
     {
@@ -57,27 +71,34 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 NULL
             );
             
-            HWND promptDisplay = CreateWindow(
-                "STATIC",
-                fields[0].promptText,
-                WS_CHILD | WS_VISIBLE,
-                10, 45, 180, 20,
-                hwnd,
-                NULL,
-                hInstance,
-                NULL
-            );
             
-            fields[0].editHandle = CreateWindow(
-                "EDIT",
-                NULL,
-                WS_CHILD | WS_VISIBLE | WS_BORDER | ES_MULTILINE | ES_AUTOVSCROLL | WS_VSCROLL,
-                10, 80, 400, 75,
-                hwnd,
-                (HMENU)fields[0].editControlId,
-                hInstance,
-                NULL
-            );
+            for (size_t i = 0; i < fieldCount; ++i)
+            {
+                int promptY = FIRST_FIELD_Y + (int)i * FIELD_VERTICAL_STEP;
+                int editY = promptY + PROMPT_HEIGHT + PROMPT_EDIT_GAP;
+                
+                CreateWindow(
+                    "STATIC",
+                    fields[i].promptText,
+                    WS_CHILD | WS_VISIBLE,
+                    10, promptY, 250, 20,
+                    hwnd,
+                    NULL,
+                    hInstance,
+                    NULL
+                );
+                
+                fields[i].editHandle = CreateWindow(
+                    "EDIT",
+                    NULL,
+                    WS_CHILD | WS_VISIBLE | WS_BORDER | ES_MULTILINE | ES_AUTOVSCROLL | WS_VSCROLL,
+                    10, editY, 400, 75,
+                    hwnd,
+                    (HMENU)fields[i].editControlId,
+                    hInstance,
+                    NULL
+                );
+            }
             
             if (fields[0].editHandle == NULL)
             {
