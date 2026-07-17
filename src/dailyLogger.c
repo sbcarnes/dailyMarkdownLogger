@@ -8,12 +8,30 @@
 
 const char g_szClassName[] = "myWindowClass";
 
+typedef struct
+{
+    const char *promptText;
+    const char *markdownHeading;
+    int editControlId;
+    HWND editHandle;
+} LogField;
+
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     static RECT rcClient;
     
     static SYSTEMTIME localTime;
     static char curDateBuffer[128];
+    
+    static LogField fields[] =
+    {
+        {
+            "What did I work on?",
+            "What did I work on?",
+            IDC_EDIT_WORKED_ON,
+            NULL
+        }
+    };
 
     switch (msg)
     {
@@ -41,7 +59,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             
             HWND promptDisplay = CreateWindow(
                 "STATIC",
-                "What did you learn today?",
+                fields[0].promptText,
                 WS_CHILD | WS_VISIBLE,
                 10, 45, 180, 20,
                 hwnd,
@@ -50,16 +68,26 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 NULL
             );
             
-            HWND logContent = CreateWindow(
+            fields[0].editHandle = CreateWindow(
                 "EDIT",
                 NULL,
                 WS_CHILD | WS_VISIBLE | WS_BORDER | ES_MULTILINE | ES_AUTOVSCROLL | WS_VSCROLL,
-                10, 80, 400, 200,
+                10, 80, 400, 75,
                 hwnd,
-                (HMENU)IDC_EDIT_LOG,
+                (HMENU)fields[0].editControlId,
                 hInstance,
                 NULL
             );
+            
+            if (fields[0].editHandle == NULL)
+            {
+                MessageBox(
+                    hwnd,
+                    "Could not create log entry field,",
+                    "Control Creation Error",
+                    MB_OK | MB_ICONERROR
+                    );
+            }
             
             HWND saveButton = CreateWindow(
                 "BUTTON",
@@ -81,8 +109,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             int control_id = LOWORD(wParam);
             int notification = HIWORD(wParam);
             
-            HWND hEdit = GetDlgItem(hwnd, IDC_EDIT_LOG);
-            
             // Adjust size as needed
             char editBuffer[EDIT_BUFFER_SIZE];
             char errorBuffer[ERROR_BUFFER_SIZE];
@@ -91,7 +117,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 if(control_id == IDC_BUTTON_SAVE){
                     //MessageBeep(MB_OK);
                     GetLocalTime(&localTime);
-                    GetWindowText(hEdit, editBuffer, sizeof(editBuffer));
+                    GetWindowText(fields[0].editHandle, editBuffer, sizeof(editBuffer));
                     if (!saveLogToFile(&localTime, editBuffer, errorBuffer, sizeof(errorBuffer))){
                         MessageBox(hwnd, errorBuffer, "Error", MB_OK | MB_ICONERROR);
                         
