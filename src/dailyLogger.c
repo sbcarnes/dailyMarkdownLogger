@@ -13,6 +13,7 @@ typedef struct
     const char *promptText;
     const char *markdownHeading;
     int editControlId;
+    HWND promptHandle;
     HWND editHandle;
 } LogField;
 
@@ -23,24 +24,41 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     static SYSTEMTIME localTime;
     static char curDateBuffer[128];
     
+    HFONT segoeFont = CreateFont(
+        20,
+        0,
+        0, 0,
+        FW_NORMAL,
+        FALSE, FALSE, FALSE,
+        DEFAULT_CHARSET,
+        OUT_DEFAULT_PRECIS,
+        CLIP_DEFAULT_PRECIS,
+        DEFAULT_QUALITY,
+        DEFAULT_PITCH | FF_DONTCARE,
+        TEXT("Segoe UI")
+    );
+    
     static LogField fields[] =
     {
         {
             "What did I work on?",
             "What did I work on?",
             IDC_EDIT_WORKED_ON,
+            NULL,
             NULL
         },
         {
             "What did I learn?",
             "What did I learn?",
             IDC_EDIT_LEARNED,
+            NULL,
             NULL
         },
         {
             "What is the next concrete step?",
             "What is the next concrete step?",
             IDC_EDIT_NEXT_STEP,
+            NULL,
             NULL
         }
     };
@@ -73,13 +91,15 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 NULL
             );
             
+            SendMessage(dateDisplay, WM_SETFONT, (WPARAM)segoeFont, TRUE);
+            
             
             for (size_t i = 0; i < fieldCount; ++i)
             {
                 int promptY = FIRST_FIELD_Y + (int)i * FIELD_VERTICAL_STEP;
                 int editY = promptY + PROMPT_HEIGHT + PROMPT_EDIT_GAP;
                 
-                CreateWindow(
+                fields[i].promptHandle = CreateWindow(
                     "STATIC",
                     fields[i].promptText,
                     WS_CHILD | WS_VISIBLE,
@@ -89,6 +109,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     hInstance,
                     NULL
                 );
+                
+                SendMessage(fields[i].promptHandle, WM_SETFONT, (WPARAM)segoeFont, TRUE);
                 
                 fields[i].editHandle = CreateWindow(
                     "EDIT",
@@ -100,6 +122,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     hInstance,
                     NULL
                 );
+                
+                SendMessage(fields[i].editHandle, WM_SETFONT, (WPARAM)segoeFont, TRUE);
             }
             
             if (fields[0].editHandle == NULL)
@@ -122,6 +146,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 hInstance,
                 NULL
             );
+            SendMessage(saveButton, WM_SETFONT, (WPARAM)segoeFont, TRUE);
             
             memset(curDateBuffer, '\0', sizeof(curDateBuffer)/sizeof(curDateBuffer[0]));
             ReleaseDC(hwnd, hdc);
@@ -192,12 +217,18 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
         case WM_ERASEBKGND:
             return 1; // Prevent flicker
-
+        case WM_SIZE:
+        {
+            int clientWidth = LOWORD(lParam);
+            int clientHeight = HIWORD(lParam);
+        }
+        break;
         case WM_CLOSE:
             DestroyWindow(hwnd);
         break;
 
         case WM_DESTROY:
+            DeleteObject(segoeFont);
             PostQuitMessage(0);
         break;
 

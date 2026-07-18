@@ -18,7 +18,7 @@ BOOL saveLogToFile(const SYSTEMTIME *time, const LogSection *sections, size_t se
         return FALSE;
     }
     
-    FILE *file = fopen(filePath, "w");
+    FILE *file = fopen(filePath, "wb");
     
     if (!file) {
         snprintf(errorReport, errorReportSize, "Could not open file: '%s' \n\n errNo: %d\n errMsg: %s",
