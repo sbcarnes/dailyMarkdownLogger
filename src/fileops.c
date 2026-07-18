@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 
-BOOL saveLogToFile(const SYSTEMTIME *time, const char *text, char *errorReport, size_t errorReportSize)
+BOOL saveLogToFile(const SYSTEMTIME *time, const LogSection *sections, size_t sectionCount, char *errorReport, size_t errorReportSize)
 {
     
     char fileName[14];
@@ -26,11 +26,21 @@ BOOL saveLogToFile(const SYSTEMTIME *time, const char *text, char *errorReport, 
         return FALSE;
     }
     
-    if (fprintf(file, "%s", text) < 0) {
+    if (fprintf(file, "# Daily Log - %04d-%02d-%02d\n\n", time->wYear, time->wMonth, time->wDay) < 0) {
         snprintf(errorReport, errorReportSize, "The log could not be written \n\n errNo: %d\n errMsg: %s",
                  errno, strerror(errno));
         fclose(file);
         return FALSE;
+    }
+    
+    for (size_t i = 0; i < sectionCount; ++i)
+    {
+        if(fprintf(file, "## %s\n\n%s\n\n", sections[i].heading, sections[i].text) < 0) {
+            snprintf(errorReport, errorReportSize, "The log could not be written \n\n errNo: %d\n errMsg: %s",
+                 errno, strerror(errno));
+        fclose(file);
+        return FALSE;
+        }
     }
     
     if (fclose(file) != 0) {

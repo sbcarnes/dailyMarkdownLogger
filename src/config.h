@@ -1,7 +1,7 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#define LOG_FIELD_COUNT
+#define LOG_FIELD_COUNT     3
 
 #define IDC_EDIT_WORKED_ON  1001
 #define IDC_EDIT_LEARNED    1002

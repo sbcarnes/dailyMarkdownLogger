@@ -46,6 +46,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     };
     
     static const size_t fieldCount = sizeof(fields) / sizeof(fields[0]);
+    char answerBuffers[LOG_FIELD_COUNT][EDIT_BUFFER_SIZE];
+    LogSection sections[LOG_FIELD_COUNT];
 
     switch (msg)
     {
@@ -138,8 +140,18 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 if(control_id == IDC_BUTTON_SAVE){
                     //MessageBeep(MB_OK);
                     GetLocalTime(&localTime);
-                    GetWindowText(fields[0].editHandle, editBuffer, sizeof(editBuffer));
-                    if (!saveLogToFile(&localTime, editBuffer, errorBuffer, sizeof(errorBuffer))){
+                    for (size_t i = 0; i < fieldCount; ++i)
+                    {
+                        GetWindowText(
+                            fields[i].editHandle,
+                            answerBuffers[i],
+                            sizeof(answerBuffers[i])
+                        );
+                        
+                        sections[i].heading = fields[i].markdownHeading;
+                        sections[i].text = answerBuffers[i];
+                    }
+                    if (!saveLogToFile(&localTime, sections, fieldCount, errorBuffer, sizeof(errorBuffer))){
                         MessageBox(hwnd, errorBuffer, "Error", MB_OK | MB_ICONERROR);
                         
                         fprintf(stderr, "%s\n", errorBuffer);
