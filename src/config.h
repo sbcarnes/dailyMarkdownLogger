@@ -20,4 +20,10 @@
 
 #define LOG_DIRECTORY       "../logs"
 
+#define WINDOW_MARGIN       10
+#define BUTTON_WIDTH        100
+#define BUTTON_HEIGHT       30
+#define DATE_WIDTH_PCT      25
+#define DATE_HEIGHT_PCT     4
+
 #endif

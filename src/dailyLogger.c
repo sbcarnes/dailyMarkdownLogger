@@ -8,6 +8,10 @@
 
 const char g_szClassName[] = "myWindowClass";
 
+static HWND dateLabelHandle = NULL;
+static HWND saveButtonHandle = NULL;
+static HWND statusLabelHandle = NULL;
+
 typedef struct
 {
     const char *promptText;
@@ -16,6 +20,35 @@ typedef struct
     HWND promptHandle;
     HWND editHandle;
 } LogField;
+
+static LogField fields[] =
+{
+    {
+        "What did I work on?",
+        "What did I work on?",
+        IDC_EDIT_WORKED_ON,
+        NULL,
+        NULL
+    },
+    {
+        "What did I learn?",
+        "What did I learn?",
+        IDC_EDIT_LEARNED,
+        NULL,
+        NULL
+    },
+    {
+        "What is the next concrete step?",
+        "What is the next concrete step?",
+        IDC_EDIT_NEXT_STEP,
+        NULL,
+        NULL
+    }
+};
+
+static const size_t fieldCount = sizeof(fields) / sizeof(fields[0]);
+
+static void layoutControls(int clientWidth, int clientHeight);
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -38,32 +71,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         TEXT("Segoe UI")
     );
     
-    static LogField fields[] =
-    {
-        {
-            "What did I work on?",
-            "What did I work on?",
-            IDC_EDIT_WORKED_ON,
-            NULL,
-            NULL
-        },
-        {
-            "What did I learn?",
-            "What did I learn?",
-            IDC_EDIT_LEARNED,
-            NULL,
-            NULL
-        },
-        {
-            "What is the next concrete step?",
-            "What is the next concrete step?",
-            IDC_EDIT_NEXT_STEP,
-            NULL,
-            NULL
-        }
-    };
     
-    static const size_t fieldCount = sizeof(fields) / sizeof(fields[0]);
+    
+    
     char answerBuffers[LOG_FIELD_COUNT][EDIT_BUFFER_SIZE];
     LogSection sections[LOG_FIELD_COUNT];
 
@@ -80,18 +90,24 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             GetLocalTime(&localTime);
             snprintf(curDateBuffer, sizeof(curDateBuffer), "%04d-%02d-%02d", localTime.wYear, localTime.wMonth, localTime.wDay);
             
-            HWND dateDisplay = CreateWindow(
+            int windowWidth = rcClient.right - rcClient.left;
+            int windowHeight = rcClient.bottom - rcClient.top;
+            
+            int dateLabelWidthBase = windowWidth * DATE_WIDTH_PCT / 100;
+            int dateLabelHeightBase = windowHeight * DATE_HEIGHT_PCT / 100;
+            
+            dateLabelHandle = CreateWindow(
                 "STATIC",
                 curDateBuffer,
                 WS_CHILD | WS_VISIBLE,
-                10, 10, 180, 20,
+                WINDOW_MARGIN, WINDOW_MARGIN, dateLabelWidthBase, dateLabelHeightBase,
                 hwnd,
                 NULL,
                 hInstance,
                 NULL
             );
             
-            SendMessage(dateDisplay, WM_SETFONT, (WPARAM)segoeFont, TRUE);
+            SendMessage(dateLabelHandle, WM_SETFONT, (WPARAM)segoeFont, TRUE);
             
             
             for (size_t i = 0; i < fieldCount; ++i)
@@ -135,18 +151,19 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     MB_OK | MB_ICONERROR
                     );
             }
-            
-            HWND saveButton = CreateWindow(
+            int buttonXBase = windowWidth - WINDOW_MARGIN - BUTTON_WIDTH;
+            int buttonYBase = windowHeight - WINDOW_MARGIN - BUTTON_HEIGHT;
+            saveButtonHandle = CreateWindow(
                 "BUTTON",
                 "Save",
                 WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
-                450, 100, 100, 30,
+                buttonXBase, buttonYBase, BUTTON_WIDTH, BUTTON_HEIGHT,
                 hwnd,
                 (HMENU)IDC_BUTTON_SAVE,
                 hInstance,
                 NULL
             );
-            SendMessage(saveButton, WM_SETFONT, (WPARAM)segoeFont, TRUE);
+            SendMessage(saveButtonHandle, WM_SETFONT, (WPARAM)segoeFont, TRUE);
             
             memset(curDateBuffer, '\0', sizeof(curDateBuffer)/sizeof(curDateBuffer[0]));
             ReleaseDC(hwnd, hdc);
@@ -219,8 +236,15 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             return 1; // Prevent flicker
         case WM_SIZE:
         {
+            if (wParam == SIZE_MINIMIZED)
+            {
+                break;
+            }
+            
             int clientWidth = LOWORD(lParam);
             int clientHeight = HIWORD(lParam);
+            
+            layoutControls(clientWidth, clientHeight);
         }
         break;
         case WM_CLOSE:
@@ -286,4 +310,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         DispatchMessage(&Msg);
     }
     return Msg.wParam;
+}
+
+static void layoutControls(int clientWidth, int clientHeight)
+{
+    int contentWidth = clientWidth - (2 * WINDOW_MARGIN);
+    int contentHeight = clientHeight - (2 * WINDOW_MARGIN);
+    
+    int dateLabelWidthNew = clientWidth * DATE_WIDTH_PCT / 100;
+    int dateLabelHeightNew = clientHeight * DATE_HEIGHT_PCT / 100;
+    
+    MoveWindow(dateLabelHandle, WINDOW_MARGIN, WINDOW_MARGIN, dateLabelWidthNew, dateLabelHeightNew, TRUE);
 }
