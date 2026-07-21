@@ -93,8 +93,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             int windowWidth = rcClient.right - rcClient.left;
             int windowHeight = rcClient.bottom - rcClient.top;
             
-            int dateLabelWidthBase = windowWidth * DATE_WIDTH_PCT / 100;
-            int dateLabelHeightBase = windowHeight * DATE_HEIGHT_PCT / 100;
+            int dateLabelWidthBase = (windowWidth * DATE_WIDTH_PCT) / 100;
+            int dateLabelHeightBase = (windowHeight * DATE_HEIGHT_PCT) / 100;
             
             dateLabelHandle = CreateWindow(
                 "STATIC",
@@ -317,8 +317,22 @@ static void layoutControls(int clientWidth, int clientHeight)
     int contentWidth = clientWidth - (2 * WINDOW_MARGIN);
     int contentHeight = clientHeight - (2 * WINDOW_MARGIN);
     
-    int dateLabelWidthNew = clientWidth * DATE_WIDTH_PCT / 100;
-    int dateLabelHeightNew = clientHeight * DATE_HEIGHT_PCT / 100;
+    int dateLabelWidthNew = (clientWidth * DATE_WIDTH_PCT) / 100;
+    int dateLabelHeightNew = (clientHeight * DATE_HEIGHT_PCT) / 100;
+    
+    int buttonX = clientWidth - WINDOW_MARGIN - BUTTON_WIDTH;
+    int buttonY = clientHeight - WINDOW_MARGIN - BUTTON_HEIGHT;
+    
+    int currentY = WINDOW_MARGIN + dateLabelHeightNew + DATE_TO_FIELD_GAP;
     
     MoveWindow(dateLabelHandle, WINDOW_MARGIN, WINDOW_MARGIN, dateLabelWidthNew, dateLabelHeightNew, TRUE);
+    
+    for (size_t i = 0; i < fieldCount; ++i)
+    {
+        MoveWindow(fields[i].promptHandle, WINDOW_MARGIN, currentY, 250, PROMPT_HEIGHT, TRUE);
+        currentY += PROMPT_HEIGHT + PROMPT_EDIT_GAP;
+        MoveWindow(fields[i].editHandle, WINDOW_MARGIN, currentY, 400, EDIT_HEIGHT, TRUE);
+        //currentY += EDIT_HEIGHT + FIELD_VERTICAL_STEP;
+        currentY += EDIT_HEIGHT + PROMPT_EDIT_GAP;
+    }
 }
