@@ -11,6 +11,7 @@ const char g_szClassName[] = "myWindowClass";
 static HWND dateLabelHandle = NULL;
 static HWND saveButtonHandle = NULL;
 static HWND statusLabelHandle = NULL;
+static HFONT segoeFont = NULL;
 
 typedef struct
 {
@@ -57,19 +58,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     static SYSTEMTIME localTime;
     static char curDateBuffer[128];
     
-    HFONT segoeFont = CreateFont(
-        20,
-        0,
-        0, 0,
-        FW_NORMAL,
-        FALSE, FALSE, FALSE,
-        DEFAULT_CHARSET,
-        OUT_DEFAULT_PRECIS,
-        CLIP_DEFAULT_PRECIS,
-        DEFAULT_QUALITY,
-        DEFAULT_PITCH | FF_DONTCARE,
-        TEXT("Segoe UI")
-    );
+    
     
     
     
@@ -89,6 +78,20 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
             GetLocalTime(&localTime);
             snprintf(curDateBuffer, sizeof(curDateBuffer), "%04d-%02d-%02d", localTime.wYear, localTime.wMonth, localTime.wDay);
+            
+            segoeFont = CreateFont(
+                20,
+                0,
+                0, 0,
+                FW_NORMAL,
+                FALSE, FALSE, FALSE,
+                DEFAULT_CHARSET,
+                OUT_DEFAULT_PRECIS,
+                CLIP_DEFAULT_PRECIS,
+                DEFAULT_QUALITY,
+                DEFAULT_PITCH | FF_DONTCARE,
+                TEXT("Segoe UI")
+            );
             
             int windowWidth = rcClient.right - rcClient.left;
             int windowHeight = rcClient.bottom - rcClient.top;
@@ -175,7 +178,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             int notification = HIWORD(wParam);
             
             // Adjust size as needed
-            char editBuffer[EDIT_BUFFER_SIZE];
+            //char editBuffer[EDIT_BUFFER_SIZE];
             char errorBuffer[ERROR_BUFFER_SIZE];
             
             if (notification == BN_CLICKED) {
@@ -252,7 +255,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         break;
 
         case WM_DESTROY:
-            DeleteObject(segoeFont);
+            if (segoeFont != NULL)
+            {
+                DeleteObject(segoeFont);
+                segoeFont = NULL;
+            }
             PostQuitMessage(0);
         break;
 
@@ -332,7 +339,6 @@ static void layoutControls(int clientWidth, int clientHeight)
         MoveWindow(fields[i].promptHandle, WINDOW_MARGIN, currentY, 250, PROMPT_HEIGHT, TRUE);
         currentY += PROMPT_HEIGHT + PROMPT_EDIT_GAP;
         MoveWindow(fields[i].editHandle, WINDOW_MARGIN, currentY, 400, EDIT_HEIGHT, TRUE);
-        //currentY += EDIT_HEIGHT + FIELD_VERTICAL_STEP;
         currentY += EDIT_HEIGHT + PROMPT_EDIT_GAP;
     }
 }
