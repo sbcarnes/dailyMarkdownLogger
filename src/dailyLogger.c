@@ -178,7 +178,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             int notification = HIWORD(wParam);
             
             // Adjust size as needed
-            //char editBuffer[EDIT_BUFFER_SIZE];
             char errorBuffer[ERROR_BUFFER_SIZE];
             
             if (notification == BN_CLICKED) {
@@ -336,9 +335,11 @@ static void layoutControls(int clientWidth, int clientHeight)
     
     for (size_t i = 0; i < fieldCount; ++i)
     {
-        MoveWindow(fields[i].promptHandle, WINDOW_MARGIN, currentY, 250, PROMPT_HEIGHT, TRUE);
+        MoveWindow(fields[i].promptHandle, WINDOW_MARGIN, currentY, contentWidth, PROMPT_HEIGHT, TRUE);
         currentY += PROMPT_HEIGHT + PROMPT_EDIT_GAP;
-        MoveWindow(fields[i].editHandle, WINDOW_MARGIN, currentY, 400, EDIT_HEIGHT, TRUE);
+        MoveWindow(fields[i].editHandle, WINDOW_MARGIN, currentY, contentWidth, EDIT_HEIGHT, TRUE);
         currentY += EDIT_HEIGHT + PROMPT_EDIT_GAP;
     }
+    
+    MoveWindow(saveButtonHandle, buttonX, buttonY, BUTTON_WIDTH, BUTTON_HEIGHT, TRUE);
 }
