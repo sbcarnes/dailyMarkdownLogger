@@ -168,6 +168,18 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             );
             SendMessage(saveButtonHandle, WM_SETFONT, (WPARAM)segoeFont, TRUE);
             
+            statusLabelHandle = CreateWindow(
+                "STATIC",
+                "Ready",
+                WS_CHILD | WS_VISIBLE | SS_LEFT | SS_CENTERIMAGE,
+                WINDOW_MARGIN, buttonYBase, 150, STATUS_HEIGHT,
+                hwnd,
+                (HMENU)IDC_STATUS_LABEL,
+                hInstance,
+                NULL
+            );
+            SendMessage(statusLabelHandle, WM_SETFONT, (WPARAM)segoeFont, TRUE);
+            
             memset(curDateBuffer, '\0', sizeof(curDateBuffer)/sizeof(curDateBuffer[0]));
             ReleaseDC(hwnd, hdc);
         }
@@ -195,14 +207,24 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                         sections[i].heading = fields[i].markdownHeading;
                         sections[i].text = answerBuffers[i];
                     }
+                    SetWindowText(statusLabelHandle, "Saved successfully.");
                     if (!saveLogToFile(&localTime, sections, fieldCount, errorBuffer, sizeof(errorBuffer))){
                         MessageBox(hwnd, errorBuffer, "Error", MB_OK | MB_ICONERROR);
-                        
+                        SetWindowText(statusLabelHandle, "Save failed.");
                         fprintf(stderr, "%s\n", errorBuffer);
                     }
                 }
                 
                 //InvalidateRect(hwnd, NULL, TRUE);
+            }
+            else if (notification == EN_CHANGE)
+            {
+                if (control_id == IDC_EDIT_WORKED_ON ||
+                    control_id == IDC_EDIT_LEARNED ||
+                    control_id == IDC_EDIT_NEXT_STEP)
+                {
+                    SetWindowText(statusLabelHandle, "Unsaved changes");
+                }
             }
             break;
         }
@@ -329,9 +351,11 @@ static void layoutControls(int clientWidth, int clientHeight)
     int buttonX = clientWidth - WINDOW_MARGIN - BUTTON_WIDTH;
     int buttonY = clientHeight - WINDOW_MARGIN - BUTTON_HEIGHT;
     
+    int statusWidth = buttonX - WINDOW_MARGIN - STATUS_BUTTON_GAP;
+    
     int currentY = WINDOW_MARGIN + dateLabelHeightNew + DATE_TO_FIELD_GAP;
     
-    MoveWindow(dateLabelHandle, WINDOW_MARGIN, WINDOW_MARGIN, dateLabelWidthNew, dateLabelHeightNew, TRUE);
+    MoveWindow(dateLabelHandle, WINDOW_MARGIN, WINDOW_MARGIN, dateLabelWidthNew, DATE_DISPLAY_HEIGHT, TRUE);
     
     for (size_t i = 0; i < fieldCount; ++i)
     {
@@ -342,4 +366,5 @@ static void layoutControls(int clientWidth, int clientHeight)
     }
     
     MoveWindow(saveButtonHandle, buttonX, buttonY, BUTTON_WIDTH, BUTTON_HEIGHT, TRUE);
+    MoveWindow(statusLabelHandle, WINDOW_MARGIN, buttonY, statusWidth, BUTTON_HEIGHT, TRUE);
 }
